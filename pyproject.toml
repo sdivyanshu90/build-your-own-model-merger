@@ -1,0 +1,142 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "model-merger"
+version = "0.1.0"
+description = "Production-ready merging of PyTorch / Hugging Face model checkpoints (model soups + SLERP) with bounded memory."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [{ name = "Model Merger contributors" }]
+keywords = ["model-merging", "model-soups", "slerp", "safetensors", "pytorch", "transformers"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Typing :: Typed",
+]
+
+# Runtime dependencies. Each is load-bearing:
+#   torch          - tensor math, dtype handling, device transfers (the merge primitive).
+#   safetensors    - safe (non-pickle) checkpoint read/write and lazy per-tensor loading.
+#   numpy          - shard-size accounting and dtype byte-width math without importing torch internals.
+#   pydantic       - declarative, validated configuration models with actionable error messages.
+#   pyyaml         - YAML configuration parsing.
+#   typer / click  - the command-line interface.
+#   rich           - human-readable terminal tables and progress (degrades cleanly when disabled).
+# transformers is intentionally an OPTIONAL extra: only Hugging Face directory features need it,
+# and the numerical core must import without it.
+dependencies = [
+    "torch>=2.2",
+    "safetensors>=0.4.1",
+    "numpy>=1.26",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+    "click>=8.1",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+huggingface = ["transformers>=4.44"]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "hypothesis>=6.100",
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "pre-commit>=3.7",
+    "transformers>=4.44",
+    "types-PyYAML>=6.0",
+]
+docs = [
+    "mkdocs>=1.6",
+    "mkdocs-material>=9.5",
+]
+
+[project.urls]
+Homepage = "https://github.com/example/model-merger"
+Documentation = "https://example.github.io/model-merger/"
+Repository = "https://github.com/example/model-merger"
+Changelog = "https://github.com/example/model-merger/blob/main/CHANGELOG.md"
+
+[project.scripts]
+model-merger = "model_merger.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/model_merger"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/", "tests/", "docs/", "configs/", "examples/", "scripts/", "README.md", "LICENSE", "CHANGELOG.md"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "C4", "PTH", "RET", "N", "W"]
+ignore = [
+    "B008",   # Typer relies on function-call defaults (typer.Option(...)) in signatures.
+    "N818",   # Exception names are a documented public hierarchy, not forced to end in "Error".
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011", "N802", "N806", "SIM117", "SIM118"]
+"examples/*" = ["T201"]
+"scripts/*" = ["T201"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["model_merger"]
+
+[tool.mypy]
+python_version = "3.10"
+packages = ["model_merger"]
+mypy_path = "src"
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+warn_return_any = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = ["transformers.*", "safetensors.*", "yaml.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "performance: memory / streaming behavior tests",
+    "integration: end-to-end merges",
+    "security: trust-boundary and path-safety tests",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["model_merger"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 90
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@overload",
+]
