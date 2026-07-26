@@ -1,0 +1,33 @@
+# Standard SLERP between exactly two compatible models.
+#
+#   model-merger merge configs/slerp.example.yaml
+
+algorithm:
+  type: slerp
+  t: 0.5                 # 0.0 -> model-a, 1.0 -> model-b
+  dot_threshold: 0.9995  # above this |cos|, fall back to linear interpolation
+  allow_extrapolation: false
+
+models:
+  - path: ./models/model-a
+    name: model-a
+  - path: ./models/model-b
+    name: model-b
+
+output:
+  path: ./merged-slerp
+  format: safetensors
+  overwrite: false
+
+precision:
+  compute_dtype: float32
+  output_dtype: preserve
+  validate_finite: true
+
+compatibility:
+  mode: strict
+  require_matching_tokenizer: true
+  require_matching_config: true
+
+non_float_tensors:
+  policy: require_equal
