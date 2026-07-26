@@ -1,0 +1,40 @@
+# Uniform model soup: the unweighted average of N compatible models.
+#
+# Generate tiny models to try this against:
+#   python scripts/generate_tiny_test_models.py ./models
+# then:
+#   model-merger merge configs/uniform_soup.example.yaml
+
+algorithm:
+  type: uniform_soup
+
+models:
+  - path: ./models/model-a
+    name: model-a
+  - path: ./models/model-b
+    name: model-b
+  - path: ./models/model-c
+    name: model-c
+
+output:
+  path: ./merged-uniform
+  format: safetensors
+  max_shard_size: 5GB
+  overwrite: false
+  atomic: true
+  write_report: true
+
+precision:
+  compute_dtype: float32   # accumulate in fp32 even for fp16/bf16 inputs
+  output_dtype: preserve   # keep each tensor's source dtype
+  validate_finite: true
+
+compatibility:
+  mode: strict
+  require_matching_tokenizer: true
+  require_matching_config: true
+
+non_float_tensors:
+  policy: require_equal     # integer/bool buffers must agree across models
+
+device: cpu
