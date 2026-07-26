@@ -1,0 +1,35 @@
+# Weighted model soup: a convex combination sum_i w_i * theta_i.
+#
+#   model-merger merge configs/weighted_soup.example.yaml
+
+algorithm:
+  type: weighted_soup
+  normalize_weights: true    # rescale weights to sum to 1 (set false for strict mode)
+  allow_negative: false      # reject negative weights (extrapolation guard)
+
+models:
+  - path: ./models/model-a
+    name: model-a
+    weight: 0.50
+  - path: ./models/model-b
+    name: model-b
+    weight: 0.30
+  - path: ./models/model-c
+    name: model-c
+    weight: 0.20
+
+output:
+  path: ./merged-weighted
+  format: safetensors
+  overwrite: false
+
+precision:
+  compute_dtype: float32
+  output_dtype: preserve
+  validate_finite: true
+
+compatibility:
+  mode: strict
+
+non_float_tensors:
+  policy: require_equal
