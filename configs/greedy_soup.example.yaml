@@ -1,0 +1,46 @@
+# Greedy model soup: score candidates, seed with the best, and add a candidate
+# only if it improves the metric.
+#
+# The evaluator here is a small external command that prints {"score": <float>}.
+# A callable evaluator (`type: callable`, `callable: "module:function"`) is also
+# supported.  See examples/custom_evaluator.py and docs/model-soups.md.
+#
+#   model-merger merge configs/greedy_soup.example.yaml
+
+algorithm:
+  type: greedy_soup
+
+models:
+  - path: ./models/model-a
+    name: model-a
+  - path: ./models/model-b
+    name: model-b
+  - path: ./models/model-c
+    name: model-c
+
+greedy:
+  direction: maximize     # or "minimize" (e.g. loss / perplexity)
+  cache: true             # memoize evaluated subsets
+  keep_temp: false        # delete temporary soups after scoring
+  evaluator:
+    type: command
+    # {model_path} is substituted with the merged checkpoint directory.
+    # The program must print a bare float or {"score": <float>} on stdout.
+    command: ["python", "examples/scoring_stub.py", "{model_path}"]
+    metric_key: score
+    timeout: 300
+
+output:
+  path: ./merged-greedy
+  format: safetensors
+  overwrite: false
+
+precision:
+  compute_dtype: float32
+  output_dtype: preserve
+
+compatibility:
+  mode: strict
+
+non_float_tensors:
+  policy: require_equal
