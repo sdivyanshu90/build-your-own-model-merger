@@ -1,0 +1,16 @@
+# Convenience wrapper around the image. The current directory is mounted at /work
+# so configs and models on the host are visible to the container.
+#
+#   docker compose run --rm merger merge configs/uniform_soup.example.yaml --overwrite
+#   docker compose run --rm merger inspect ./models/model-a
+
+services:
+  merger:
+    build:
+      context: .
+    image: model-merger:latest
+    working_dir: /work
+    volumes:
+      - ./:/work
+    # Override at the CLI: `docker compose run --rm merger <command> ...`
+    command: ["--help"]
