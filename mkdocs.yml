@@ -1,0 +1,67 @@
+site_name: Model Merger
+site_description: Merge model checkpoints with model soups and SLERP, safely and with bounded memory.
+repo_url: https://github.com/example/model-merger
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - Concepts:
+      - Mathematical foundations: mathematical-foundations.md
+      - Model soups: model-soups.md
+      - SLERP: slerp.md
+      - Numerical precision policy: numerical-precision-policy.md
+  - Architecture:
+      - Overview: architecture.md
+      - Checkpoint formats: checkpoint-formats.md
+      - Compatibility & validation: compatibility-validation.md
+      - Memory & performance: memory-and-performance.md
+  - Reference:
+      - Configuration: configuration-reference.md
+      - Python API: python-api.md
+      - CLI: cli-reference.md
+  - Operations:
+      - Security & trust: security-and-trust.md
+      - Reproducibility: reproducibility.md
+      - Testing strategy: testing-strategy.md
+      - Troubleshooting: troubleshooting.md
+      - Limitations: limitations.md
+      - Glossary: glossary.md
+  - Tutorials:
+      - First uniform soup: tutorials/first-uniform-soup.md
+      - Weighted soup: tutorials/weighted-soup.md
+      - First SLERP: tutorials/first-slerp.md
+      - Merging Hugging Face models: tutorials/merging-huggingface-models.md
+      - Evaluating a merged model: tutorials/evaluating-a-merged-model.md
+  - Decisions (ADRs):
+      - 0001 Checkpoint abstraction: adr/0001-checkpoint-abstraction.md
+      - 0002 Streaming merge design: adr/0002-streaming-merge-design.md
+      - 0003 Numerical precision policy: adr/0003-numerical-precision-policy.md
