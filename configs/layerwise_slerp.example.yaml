@@ -1,0 +1,66 @@
+# Layer-wise interpolation: different coefficients for different parts of the model.
+#
+# Rules are matched in priority order (highest first, ties by declaration order).
+# The first matching rule wins; tensors matching no rule use the top-level
+# `algorithm`.  Non-floating tensors always use `non_float_tensors.policy`,
+# regardless of any rule.
+#
+#   model-merger plan  configs/layerwise_slerp.example.yaml   # inspect first
+#   model-merger merge configs/layerwise_slerp.example.yaml
+
+algorithm:
+  type: slerp
+  t: 0.5                 # default for tensors not matched by a rule
+
+models:
+  - path: ./models/model-a
+    name: model-a
+  - path: ./models/model-b
+    name: model-b
+
+output:
+  path: ./merged-layerwise
+  format: safetensors
+  overwrite: false
+
+rules:
+  # Embeddings: gentle linear blend toward model-a.
+  - name: embedding-policy
+    priority: 10
+    match:
+      regex: ".*embed.*weight"
+    algorithm:
+      type: linear
+      t: 0.20
+
+  # Lower transformer blocks: stay close to model-a.
+  - name: lower-layers
+    priority: 5
+    match:
+      layer_range:
+        start: 0
+        end: 0
+    algorithm:
+      type: slerp
+      t: 0.30
+
+  # Upper transformer blocks: lean toward model-b.
+  - name: upper-layers
+    priority: 5
+    match:
+      layer_range:
+        start: 1
+        end: 1
+    algorithm:
+      type: slerp
+      t: 0.70
+
+precision:
+  compute_dtype: float32
+  output_dtype: preserve
+
+compatibility:
+  mode: strict
+
+non_float_tensors:
+  policy: require_equal
